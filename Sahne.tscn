@@ -1,0 +1,109 @@
+[gd_scene load_steps=17 format=2]
+
+[ext_resource path="res://start_script.gd" type="Script" id=1]
+[ext_resource path="res://cards/cardback.png" type="Texture" id=2]
+[ext_resource path="res://deckclicker1.gd" type="Script" id=3]
+[ext_resource path="res://cards/AS.png" type="Texture" id=4]
+[ext_resource path="res://cards/AC.png" type="Texture" id=5]
+[ext_resource path="res://cards/AD.png" type="Texture" id=6]
+[ext_resource path="res://cards/AH.png" type="Texture" id=7]
+[ext_resource path="res://restart.gd" type="Script" id=8]
+[ext_resource path="res://sprites/restart.png" type="Texture" id=9]
+[ext_resource path="res://sprites/polishakase8.png" type="Texture" id=10]
+[ext_resource path="res://Camera2D.gd" type="Script" id=11]
+[ext_resource path="res://bgsc.gd" type="Script" id=12]
+[ext_resource path="res://gerial.gd" type="Script" id=13]
+[ext_resource path="res://sprites/bbaton.png" type="Texture" id=14]
+
+[sub_resource type="RectangleShape2D" id=1]
+extents = Vector2( 3.2, 3.59375 )
+
+[sub_resource type="CircleShape2D" id=2]
+
+[node name="Sahne" type="Node2D"]
+script = ExtResource( 1 )
+
+[node name="Sprite" type="Sprite" parent="."]
+z_index = -500
+texture = ExtResource( 10 )
+centered = false
+script = ExtResource( 12 )
+
+[node name="deck_clicker" type="Node2D" parent="."]
+position = Vector2( 960, 200 )
+scale = Vector2( 0.2, 0.2 )
+
+[node name="KinematicBody2D" type="KinematicBody2D" parent="deck_clicker"]
+z_index = -1
+input_pickable = true
+script = ExtResource( 3 )
+
+[node name="Sprite" type="Sprite" parent="deck_clicker/KinematicBody2D"]
+texture = ExtResource( 2 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="deck_clicker/KinematicBody2D"]
+scale = Vector2( 100, 128 )
+shape = SubResource( 1 )
+
+[node name="Cardback" type="Sprite" parent="."]
+modulate = Color( 1, 1, 1, 0.121569 )
+position = Vector2( 120, 200 )
+scale = Vector2( 0.2, 0.2 )
+texture = ExtResource( 5 )
+
+[node name="Cardback2" type="Sprite" parent="Cardback"]
+position = Vector2( 700, 0 )
+texture = ExtResource( 6 )
+
+[node name="Cardback3" type="Sprite" parent="Cardback/Cardback2"]
+position = Vector2( 700, 0 )
+texture = ExtResource( 7 )
+
+[node name="Cardback4" type="Sprite" parent="Cardback/Cardback2/Cardback3"]
+position = Vector2( 700, 0 )
+texture = ExtResource( 4 )
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+position = Vector2( 114, 1787 )
+scale = Vector2( 0.8, 0.8 )
+input_pickable = true
+script = ExtResource( 8 )
+
+[node name="Sprite" type="Sprite" parent="StaticBody2D"]
+self_modulate = Color( 1, 1, 1, 0.862745 )
+position = Vector2( -6.10352e-05, 2.5 )
+scale = Vector2( 0.2, 0.2 )
+z_index = 100
+texture = ExtResource( 9 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+scale = Vector2( 9, 9 )
+shape = SubResource( 2 )
+
+[node name="StaticBody2D2" type="StaticBody2D" parent="."]
+position = Vector2( 967, 1787 )
+rotation = -1.87629
+scale = Vector2( 0.8, 0.8 )
+input_pickable = true
+script = ExtResource( 13 )
+
+[node name="Sprite" type="Sprite" parent="StaticBody2D2"]
+self_modulate = Color( 1, 1, 1, 0.862745 )
+position = Vector2( -6.10352e-05, 2.5 )
+rotation = -4.44361
+scale = Vector2( 0.55, 0.55 )
+z_index = 100
+texture = ExtResource( 14 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D2"]
+scale = Vector2( 9, 9 )
+shape = SubResource( 2 )
+
+[node name="Camera2D" type="Camera2D" parent="."]
+anchor_mode = 0
+current = true
+script = ExtResource( 11 )
+
+[connection signal="input_event" from="deck_clicker/KinematicBody2D" to="." method="_on_deck_clicked"]
+[connection signal="input_event" from="StaticBody2D" to="StaticBody2D" method="_on_StaticBody2D_input_event"]
+[connection signal="input_event" from="StaticBody2D2" to="." method="_remake_move"]
