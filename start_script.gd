@@ -1,7 +1,8 @@
 extends Node2D
 
 var card_template = preload('res://objects/kart.tscn');
-var won_sign = preload('res://wonsign.tscn')
+#var won_sign = preload('res://wonsign.tscn')
+var won_sign = preload('res://autocomplate_button.tscn')
 var deck_position = Vector2(960,200)
 var ace_pos = []
 var ace_vals = [-1,-1,-1,-1]
@@ -16,6 +17,8 @@ var deck_clicker : Node2D
 var text_font:Font
 var states = []
 var appended = true
+var is_autocomplating = false
+var autocomplate_info = [-1,-1,-1,false,0,[]]
 
 
 
@@ -140,6 +143,7 @@ func _on_deck_clicked(viewport,event,shape_idx):#( (event is InputEventScreenTou
 
 
 func _open_top_card():
+	if is_autocomplating: return
 	push_state()
 	if len(open) > 2:
 		var count = 0
@@ -349,10 +353,10 @@ func _recursive_check_won(arr):
 func _check_won():
 	var children = self.get_children()
 	if _recursive_check_won(children):
+		#IF WON
 		var new_card = won_sign.instance()
 		new_card.position = Vector2(540,-120)
 		self.add_child(new_card)
-
 
 
 
@@ -504,9 +508,28 @@ func _ready():
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
-
+func _process(delta):
+	if is_autocomplating:
+		if autocomplate_info[3]:
+			#move the card
+			autocomplate_info[4] += 4.0*delta
+#			print(autocomplate_info)
+			autocomplate_info[4] = min(autocomplate_info[4],1)
+			var newloc = lerp(autocomplate_info[1],autocomplate_info[2],autocomplate_info[4])
+			autocomplate_info[0].position = newloc
+			var cardinfo = autocomplate_info[5]
+			if autocomplate_info[4] == 1:
+				var idd = cardinfo[2]
+				var cls = cardinfo[3]
+				_ace_drop(idd,autocomplate_info[0],null,cls)
+				autocomplate_info = [-1,-1,-1,false,0,[]]
+				if cardinfo[0] == pos.DECK:
+					deck.remove(cardinfo[1])
+				elif cardinfo[0] == pos.BOARDS:
+					boards[cardinfo[1]].remove(len(boards[cardinfo[1]])-1)
+					#no need to open new card anyway since all will be open
+				_autocomplate_next()
+							
 func _draw():
 	var asd = str(len(deck))
 	draw_string(text_font,deck_position,asd,Color.white)
@@ -542,6 +565,64 @@ func _remake_move(viewport, event, shape_idx):
 		apply_state(st)
 		print(states)
 
+
+func autocomplate():
+	if !is_autocomplating:
+		is_autocomplating = true
+		#first reset open
+		var openfaceup = []
+		for i in self.open:
+			if self.get_node(str(i)) != null:
+				self.remove_child(self.get_node(str(i)))
+		deck.append_array(open)
+		open = []
+		_autocomplate_next()
+
+
+func _autocomplate_next():
+	var cardinfo = _autocomplate_search_next() #pos,index,id,cls,nval
+	print(cardinfo)
+	if cardinfo[0] == -1:
+		printerr("CARD DOES NOT EXIST\n",cardinfo)
+		is_autocomplating = false
+		return
+	var end_loc = ace_pos[cardinfo[3]]
+	#check if the card exists
+	if self.get_node(str(cardinfo[2])) == null:
+		#create card if does not exist
+		spawn_card(deck_position + Vector2(-140,0),cardinfo[2],true)
+	var tomove_card:Node2D = self.get_node(str(cardinfo[2]))
+	var start_loc = tomove_card.position
+	autocomplate_info = [tomove_card,start_loc,end_loc,true,0,cardinfo]
+	
+
+
+enum pos{
+	OPEN,
+	DECK,
+	BOARDS,
+}
+
+
+func _autocomplate_search_next():
+	for i in range(4):
+		var cls = ace_classes[i]
+		var nval = ace_vals[i] + 1
+		var card_id = generate_card_id(nval,cls)
+		#first search on open cards #NOT NEEDED AS IT RESETS
+#		for j in range(len(open)):
+#			if open[j] == card_id:
+#				return [pos.OPEN, j,card_id,cls,nval]
+		#search in deck
+		for j in range(len(deck)):
+			if deck[j] == card_id:
+				return [pos.DECK,j,card_id,cls,nval]
+		#search on boards
+		for j in range(len(boards)):
+			var boar:Array = boards[j]
+			if boar.back() == card_id:
+				return[pos.BOARDS,j,card_id,cls,nval]
+	return [-1,-1,-1]
 
 #func _on_Sahne_draw():
 #	var asd = str(len(deck))

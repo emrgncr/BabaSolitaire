@@ -49,6 +49,7 @@ shape = SubResource( 1 )
 modulate = Color( 1, 1, 1, 0.121569 )
 position = Vector2( 120, 200 )
 scale = Vector2( 0.2, 0.2 )
+z_index = -400
 texture = ExtResource( 5 )
 
 [node name="Cardback2" type="Sprite" parent="Cardback"]

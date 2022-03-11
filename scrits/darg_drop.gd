@@ -49,6 +49,7 @@ func _set_drag_pc():
 	dragging = !dragging
 
 func _on_KinematicBody2D_input_event(viewport,event,shape_idx):
+	if bigboss.is_autocomplating: return
 	if bigboss.hodl and bigboss.activeID != id:
 		return
 	if event is InputEventMouseButton:
@@ -82,6 +83,7 @@ func _on_KinematicBody2D_input_event(viewport,event,shape_idx):
 
 
 func _input(event):
+	if bigboss.is_autocomplating: return
 	if bigboss.activeID != id:
 		return
 	if event is InputEventMouseButton or event is InputEventScreenTouch:
